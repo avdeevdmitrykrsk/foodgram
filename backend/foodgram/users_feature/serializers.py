@@ -3,10 +3,39 @@ from django.core.exceptions import ValidationError
 from django.db.models import F
 from rest_framework import serializers
 
+from content.models import Recipe
 from users.serializers import UserSerializer
-from users_feature.models import Subscribe
+from users.utils import Base64ToAvatar
+from users_feature.models import Favorite, Subscribe
 
 User = get_user_model()
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    # recipe = serializers.SerializerMethodField(
+    #     method_name='get_recipe', read_only=True
+    # )
+
+    class Meta:
+        model = Favorite
+        fields = ('recipe',)
+        read_only_fields = ('recipe',)
+
+    # def get_recipe(self, obj):
+    #     return {
+    #         'id': obj.recipe.id,
+    #         'name': obj.recipe.name,
+    #         'image': obj.recipe.image.url,
+    #         'cooking_time': obj.recipe.cooking_time
+    #     }
+
+    def create(self, validated_data):
+        return Favorite.objects.create(
+            user=self.context.get('request').user,
+            recipe=Recipe.objects.get(
+                id=self.context.get('request').parser_context['kwargs']['pk']
+            )
+        )
 
 
 class SubscribeSerializer(serializers.ModelSerializer):

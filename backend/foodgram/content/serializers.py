@@ -9,6 +9,7 @@ from content.models import (
 )
 from users.serializers import UserSerializer
 from users.utils import Base64ToAvatar
+from users_feature.models import Favorite
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -30,13 +31,24 @@ class GetRecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(read_only=True, many=True)
     author = UserSerializer(read_only=True)
     image = Base64ToAvatar()
+    is_favorited = serializers.SerializerMethodField(
+        method_name='check_favorite'
+    )
 
     class Meta:
         model = Recipe
         fields = (
-            'id', 'tags', 'author', 'ingredients',
+            'id', 'tags', 'author', 'is_favorited', 'ingredients',
             'name', 'image', 'text', 'cooking_time'
         )
+
+    def check_favorite(self, obj):
+        me_user = self.context.get('request').user
+        favorite_list = Favorite.objects.filter(user=me_user)
+        for fav in favorite_list:
+            if obj == fav.recipe:
+                return True
+        return False
 
     def make_data(self, obj):
         return obj.ingredients.values(
