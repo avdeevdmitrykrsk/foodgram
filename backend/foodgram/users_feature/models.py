@@ -28,3 +28,15 @@ class Favorite(models.Model):
         Recipe,
         on_delete=models.CASCADE
     )
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='cart_by_user'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE
+    )

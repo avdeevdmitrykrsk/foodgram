@@ -1,9 +1,13 @@
 from django.db.models import Count, F
 from django.shortcuts import get_object_or_404, render
 from rest_framework import viewsets
-from rest_framework.filters import BaseFilterBackend, SearchFilter
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny
 
+from content.filters import (
+    AuthorFilterBackend, IsFavoritedFilterBackend,
+    ShoppingCartFilterBackend, TagFilterBackend
+)
 from content.models import Ingredient, IngredientRecipe, Recipe, Tag
 from content.serializers import (
     GetRecipeSerializer,
@@ -11,6 +15,8 @@ from content.serializers import (
     RecipeSerializer,
     TagSerializer
 )
+
+SAFE_ACTIONS = ('list', 'retrieve')
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -20,25 +26,17 @@ class TagViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
 
-class IsFavoritedFilterBackend(BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        filter_param = request.query_params.get('is_favorited', None)
-        if filter_param:
-            queryset = [
-                rec.recipe for rec in request.user.favorite_list_by_user.all()
-            ]
-        return queryset
-
-
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    filter_backends = (SearchFilter, IsFavoritedFilterBackend)
-    search_fields = ('ingredients', 'tags',)
+    filter_backends = (
+        AuthorFilterBackend, IsFavoritedFilterBackend,
+        ShoppingCartFilterBackend, TagFilterBackend,
+    )
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_serializer_class(self):
-        if self.action == 'list' or self.action == 'retrieve':
+        if self.action in SAFE_ACTIONS:
             return GetRecipeSerializer
         return RecipeSerializer
 

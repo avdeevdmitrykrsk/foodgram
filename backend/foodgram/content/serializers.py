@@ -8,8 +8,8 @@ from content.models import (
     Tag,
 )
 from users.serializers import UserSerializer
-from users.utils import Base64ToAvatar
-from users_feature.models import Favorite
+from users.utils import Base64ToAvatar, check_list
+from users_feature.models import Favorite, ShoppingCart
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -34,21 +34,29 @@ class GetRecipeSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField(
         method_name='check_favorite'
     )
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='check_is_in_shopping_cart'
+    )
 
     class Meta:
         model = Recipe
         fields = (
-            'id', 'tags', 'author', 'is_favorited', 'ingredients',
+            'id', 'tags', 'author', 'ingredients',
+            'is_favorited', 'is_in_shopping_cart',
             'name', 'image', 'text', 'cooking_time'
         )
 
+    def check_is_in_shopping_cart(self, obj):
+        shopping_cart_list = ShoppingCart.objects.filter(
+            user=self.context.get('request').user
+        )
+        return check_list(obj, shopping_cart_list, 'recipe')
+
     def check_favorite(self, obj):
-        me_user = self.context.get('request').user
-        favorite_list = Favorite.objects.filter(user=me_user)
-        for fav in favorite_list:
-            if obj == fav.recipe:
-                return True
-        return False
+        favorite_list = Favorite.objects.filter(
+            user=self.context.get('request').user
+        )
+        return check_list(obj, favorite_list, 'recipe')
 
     def make_data(self, obj):
         return obj.ingredients.values(
@@ -59,28 +67,21 @@ class GetRecipeSerializer(serializers.ModelSerializer):
         )
 
 
-class IngredientAmountSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        read_only=True
-    )
+# class IngredientAmountSerializer(serializers.ModelSerializer):
+#     id = serializers.PrimaryKeyRelatedField(
+#         read_only=True
+#     )
 
-    class Meta:
-        model = IngredientRecipe
-        fields = ('id', 'amount')
+#     class Meta:
+#         model = IngredientRecipe
+#         fields = ('id', 'amount')
 
 
-class RecipeSerializer(serializers.ModelSerializer):
-    ingredients = IngredientAmountSerializer(read_only=True, many=True)
-    tags = serializers.PrimaryKeyRelatedField(
-        read_only=True, many=True
-    )
-    image = Base64ToAvatar()
+class RecipeSerializer(GetRecipeSerializer):
 
-    class Meta:
-        model = Recipe
-        fields = (
-            'id', 'ingredients', 'tags', 'name',
-            'image', 'text', 'cooking_time'
+    class Meta(GetRecipeSerializer.Meta):
+        read_only_fields = (
+            'tags', 'ingredients', 'author'
         )
 
     def create(self, validated_data):
@@ -115,7 +116,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             IngredientRecipe.objects.create(
                 recipe=instance,
                 amount=ingredient['amount'],
-                ingredients=Ingredient.objects.get(
+                ingredient=Ingredient.objects.get(
                     id=ingredient['id']
                 )
             )

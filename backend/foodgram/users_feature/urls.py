@@ -1,7 +1,9 @@
 from django.urls import path
 
 from users_feature.views import (
-    FavoriteViewSet, SubscribeToUser, SubscriptionsViewSet
+    DownloadShoppingCartView, FavoriteViewSet,
+    SubscribeToUser, SubscriptionsViewSet,
+    ShoppingCartViewSet
 )
 
 urlpatterns = [
@@ -19,10 +21,25 @@ urlpatterns = [
             }
         )
     ),
-    path('recipes/<int:pk>/favorite/', FavoriteViewSet.as_view(
-        {
-            'post': 'create',
-            'delete': 'destroy'
-        }
-    ))
+    path(
+        'recipes/<int:pk>/favorite/', FavoriteViewSet.as_view(
+            {
+                'post': 'create',
+                'delete': 'destroy'
+            }
+        )
+    ),
+    path(
+        'recipes/<int:pk>/shopping_cart/', ShoppingCartViewSet.as_view(
+            {
+                'get': 'retrieve',
+                'post': 'create',
+                'delete': 'destroy'
+            }
+        )
+    ),
+    # path('recipes/<int:pk>/get_link/',),
+    path(
+        'recipes/download_shopping_cart/', DownloadShoppingCartView.as_view()
+    )
 ]

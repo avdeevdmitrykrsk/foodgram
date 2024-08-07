@@ -5,7 +5,7 @@ from django.db.models import F
 from rest_framework import serializers
 
 from users_feature.models import Subscribe
-from users.utils import Base64ToAvatar
+from users.utils import Base64ToAvatar, check_list
 
 User = get_user_model()
 
@@ -40,12 +40,10 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def check_subscribe(self, obj):
-        me_user = self.context.get('request').user
-        subscribe_list = Subscribe.objects.filter(user=me_user)
-        for sub in subscribe_list:
-            if obj == sub.subscribe:
-                return True
-        return False
+        subscribe_list = Subscribe.objects.filter(
+            user=self.context.get('request').user
+        )
+        return check_list(obj, subscribe_list, Subscribe)
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
