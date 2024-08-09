@@ -38,7 +38,6 @@ urlpatterns = [
             }
         )
     ),
-    # path('recipes/<int:pk>/get_link/',),
     path(
         'recipes/download_shopping_cart/', DownloadShoppingCartView.as_view()
     )

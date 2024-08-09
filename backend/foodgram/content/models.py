@@ -1,9 +1,7 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
-
-MIN_COOKING_TIME_VALUE = 1
-MIN_INGREDIENTS_AMOUNT = 1
 
 User = get_user_model()
 
@@ -65,7 +63,7 @@ class Recipe(models.Model):
         verbose_name='Время приготовления',
         help_text='Время приготовления (в минутах).',
         validators=[
-            MinValueValidator(MIN_COOKING_TIME_VALUE)
+            MinValueValidator(settings.MIN_COOKING_TIME_VALUE)
         ]
     )
     tags = models.ManyToManyField(
@@ -103,6 +101,7 @@ class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
+        related_name='amount_by_ingredient',
         on_delete=models.CASCADE
     )
     recipe = models.ForeignKey(
@@ -115,7 +114,7 @@ class IngredientRecipe(models.Model):
         help_text='Колличество ингредиентов',
         default=0,
         validators=[
-            MinValueValidator(MIN_INGREDIENTS_AMOUNT)
+            MinValueValidator(settings.MIN_INGREDIENTS_AMOUNT)
         ]
     )
 

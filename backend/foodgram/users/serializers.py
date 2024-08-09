@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
@@ -40,10 +42,13 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def check_subscribe(self, obj):
-        subscribe_list = Subscribe.objects.filter(
-            user=self.context.get('request').user
-        )
-        return check_list(obj, subscribe_list, Subscribe)
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            subscribe_list = Subscribe.objects.filter(
+                user=user
+            )
+            return check_list(obj, subscribe_list, Subscribe)
+        return False
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -54,8 +59,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'id', 'email', 'username', 'first_name', 'last_name', 'password'
         )
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'required': True, 'write_only': True},
+            'email': {'required': True},
+            'username': {'required': True},
+            'first_name': {'required': True},
+            'last_name': {'required': True}
         }
+
+    # def validate_username(self, username):
+    #     if not re.match(r'^[\w.@+-]+\z', username):
+    #         raise ValidationError('Неподходящий юзернейм.')
+    #     return username
 
     def create(self, validated_data):
         password = validated_data.pop('password')

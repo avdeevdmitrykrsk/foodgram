@@ -1,4 +1,6 @@
 Django==3.2.3
+django-filter==2.4.0
+django-short-url==1.1.1
 django-cors-headers==3.13.0
 djangorestframework==3.12.4
 djangorestframework-simplejwt==4.7.2

@@ -28,12 +28,16 @@ DEBUG = True
 
 AUTH_USER_MODEL = 'users.FoodgramUser'
 
+DJANGO_SHORT_URL_REDIRECT_URL = ''
+DJANGO_SHORT_URL_LENGTH = 3
+
 DJOSER = {
     'HIDE_USERS': False,
     'LOGIN_FIELD': 'email',
     'PERMISSIONS': {
         'user': ['rest_framework.permissions.AllowAny'],
         'user_list': ['rest_framework.permissions.AllowAny'],
+        'current_user': 'rest_framework.permissions.IsAuthenticated'
     },
     'SERIALIZERS': {
         'user': 'users.serializers.UserSerializer',
@@ -58,6 +62,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_filters',
+    'django_short_url',
     'djoser',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
@@ -82,7 +88,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'content.paginations.PaginateByPageLimit',
     'PAGE_SIZE': 5,
 }
 
@@ -110,22 +116,22 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'django'),
-        'USER': os.getenv('POSTGRES_USER', 'django'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', ''),
-        'PORT': os.getenv('DB_PORT', 5432)
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', 'django'),
+#         'USER': os.getenv('POSTGRES_USER', 'django'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+#         'HOST': os.getenv('DB_HOST', ''),
+#         'PORT': os.getenv('DB_PORT', 5432)
+#     }
+# }
 
 
 # Password validation
@@ -146,6 +152,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+MIN_COOKING_TIME_VALUE = 1
+MIN_INGREDIENTS_AMOUNT = 1
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/

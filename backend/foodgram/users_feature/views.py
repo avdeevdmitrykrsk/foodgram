@@ -41,7 +41,6 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
 class DownloadShoppingCartView(APIView):
 
     def get(self, request, *args, **kwargs):
-        # FileResponse
         my_recipes = ShoppingCart.objects.filter(
             user=request.user
         )
@@ -71,7 +70,6 @@ class DownloadShoppingCartView(APIView):
                 )
             )
         ingredients_count = list(set(ingredients_count))
-        print(ingredients_count)
         with open('shopping_cart.txt', 'w', encoding='utf-8') as f:
             for values in ingredients_count:
                 ingredient, value, mes_unit = values

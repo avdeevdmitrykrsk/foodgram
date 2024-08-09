@@ -1,14 +1,16 @@
-from django.db.models import Count, F
-from django.shortcuts import get_object_or_404, render
-from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from django_short_url.views import get_surl
+from rest_framework import status, views, viewsets
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
 from content.filters import (
-    AuthorFilterBackend, IsFavoritedFilterBackend,
+    AuthorFilterBackend, IsFavoritedFilterBackend, IngredientNameFilterBackend,
     ShoppingCartFilterBackend, TagFilterBackend
 )
-from content.models import Ingredient, IngredientRecipe, Recipe, Tag
+from content.models import Ingredient, Recipe, Tag
+from content.paginations import PaginateByPageLimit
 from content.serializers import (
     GetRecipeSerializer,
     IngredientSerializer,
@@ -16,7 +18,21 @@ from content.serializers import (
     TagSerializer
 )
 
+LURL_URL_POS = 0
+SHORT_ID_POS = 2
 SAFE_ACTIONS = ('list', 'retrieve')
+
+
+class ShortLinkView(views.APIView):
+
+    def get(self, request, *args, **kwargs):
+        lurl = request.path.split('get_link/')[LURL_URL_POS]
+        surl = get_surl(lurl)
+        path = f'{request.get_host()}{surl}'
+        data = {
+            'short-link': path
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -29,6 +45,8 @@ class TagViewSet(viewsets.ModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    pagination_class = PaginateByPageLimit
     filter_backends = (
         AuthorFilterBackend, IsFavoritedFilterBackend,
         ShoppingCartFilterBackend, TagFilterBackend,
@@ -48,8 +66,7 @@ class IngredientsViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny,)
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientNameFilterBackend
     pagination_class = None
-    # http_method_names = ('get', 'post', 'patch', 'delete')
-
+    http_method_names = ('get',)
