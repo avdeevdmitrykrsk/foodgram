@@ -13,7 +13,7 @@ from users.serializers import UserSerializer
 from users.utils import Base64ToAvatar, check_list
 from users_feature.models import Favorite, ShoppingCart
 
-EXPECTED_RECIPE_FIELD = ('ingredients', 'tags')
+EXPECTED_RECIPE_FIELDS = ('ingredients', 'tags')
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -108,24 +108,31 @@ class RecipeSerializer(GetRecipeSerializer):
             'cooking_time': {'required': True}
         }
 
-    def validate(self, validated_data):
-        for field in EXPECTED_RECIPE_FIELD:
-            error_message = f'Неправильное значение поля {field}'
-            if not self.initial_data.get(field):
-                raise ValidationError(error_message)
-            for ingredient in self.initial_data.get(field):
-                print(ingredient.get('id'))
-                if ingredient['id'] < settings.MIN_INGREDIENTS_AMOUNT:
+    def validate(self, data):
+        for field in EXPECTED_RECIPE_FIELDS:
+            if (
+                not self.initial_data.get('ingredients')
+                or not self.initial_data.get('tags')
+            ):
+                raise ValidationError('Ингредиенты не были указаны.')
+            ingredients = self.initial_data['ingredients']
+            ingredients_id = [
+                ingredient['id'] for ingredient in ingredients
+            ]
+            if len(ingredients_id) != len(set(ingredients_id)):
+                raise ValidationError(
+                    'Не должно быть одинаковых ингредиентов.'
+                )
+            for ingredient in ingredients:
+                if not Ingredient.objects.filter(id=ingredient['id']):
                     raise ValidationError(
-                        f'{field} не может быть меньше 1.'
+                        'Ингредиента с таким id не существует.'
                     )
-                if (
-                    not Ingredient.objects.filter(
-                        id=ingredient['id']
-                    ).exists()
-                ):
-                    raise ValidationError(error_message)
-        return validated_data
+                if ingredient['amount'] < 1:
+                    raise ValidationError(
+                        'Поле amount не должно быть меньше 1.'
+                    )
+        return data
 
     def create(self, validated_data):
         tags_values = self.initial_data.pop('tags')
@@ -156,7 +163,7 @@ class RecipeSerializer(GetRecipeSerializer):
             instance.tags.set(tags_values)
 
         ingredients_values = self.initial_data.pop('ingredients')
-        instance.amount_by_ingredient.all().delete()
+        instance.ingredientrecipe_set.all().delete()
         for ingredient in ingredients_values:
             IngredientRecipe.objects.create(
                 recipe=instance,

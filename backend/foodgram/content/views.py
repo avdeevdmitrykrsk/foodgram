@@ -3,7 +3,9 @@ from django_short_url.views import get_surl
 from rest_framework import status, views, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    AllowAny, IsAuthenticatedOrReadOnly, SAFE_METHODS
+)
 
 from content.filters import (
     AuthorFilterBackend, IsFavoritedFilterBackend, IngredientNameFilterBackend,
@@ -11,6 +13,7 @@ from content.filters import (
 )
 from content.models import Ingredient, Recipe, Tag
 from content.paginations import PaginateByPageLimit
+from content.permissions import IsAuthorOrReadOnly
 from content.serializers import (
     GetRecipeSerializer,
     IngredientSerializer,
@@ -45,7 +48,7 @@ class TagViewSet(viewsets.ModelViewSet):
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
     pagination_class = PaginateByPageLimit
     filter_backends = (
         AuthorFilterBackend, IsFavoritedFilterBackend,
@@ -65,7 +68,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
 class IngredientsViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientNameFilterBackend
     pagination_class = None
