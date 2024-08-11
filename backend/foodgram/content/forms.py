@@ -8,7 +8,7 @@ from .models import Recipe
 class RecipeForm(forms.ModelForm):
     favorite_count = forms.IntegerField(
         required=False,
-        label='Добавили в избранное',
+        label='В избранном у',
         widget=forms.NumberInput(
             attrs={'readonly': 'readonly'}
         )

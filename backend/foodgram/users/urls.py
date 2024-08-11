@@ -5,7 +5,8 @@ from django.urls import include, path
 from users.views import AvatarViewSet, MeViewSet
 
 urlpatterns = [
-    path('users/me/', MeViewSet.as_view(
+    path(
+        'users/me/', MeViewSet.as_view(
             {
                 'get': 'retrieve'
             }
