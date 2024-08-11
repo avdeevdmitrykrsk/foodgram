@@ -1,9 +1,10 @@
+# Thirdparty imports
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from content.views import (
-    IngredientsViewSet, RecipesViewSet, ShortLinkView, TagViewSet
-)
+# Projects imports
+from content.views import (IngredientsViewSet, RecipesViewSet, ShortLinkView,
+                           TagViewSet)
 
 router = DefaultRouter()
 router.register('recipes', RecipesViewSet, basename='recipes')

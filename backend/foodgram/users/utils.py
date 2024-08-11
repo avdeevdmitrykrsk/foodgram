@@ -1,5 +1,7 @@
+# Standart lib imports
 import base64
 
+# Thirdparty imports
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 

@@ -1,19 +1,18 @@
-from django.conf import settings
+# Thirdparty imports
 from django.db.models import F
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator, ValidationError
 
-from content.models import (
-    Ingredient,
-    IngredientRecipe,
-    Recipe,
-    Tag,
-)
+# Projects imports
+from content.models import Ingredient, IngredientRecipe, Recipe, Tag
 from users.serializers import UserSerializer
 from users.utils import Base64ToAvatar, check_list
 from users_feature.models import Favorite, ShoppingCart
 
 EXPECTED_RECIPE_FIELDS = ('ingredients', 'tags')
+INGREDIENT_ID_POS = 0
+INGREDIENT_AMOUNT_POS = 1
+MINIMUM_AMOUNT_COUNT = 1
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -100,8 +99,6 @@ class RecipeSerializer(GetRecipeSerializer):
             'name', 'image', 'text', 'cooking_time'
         )
         extra_kwargs = {
-            'ingredients': {'required': True},
-            'tags': {'required': True},
             'image': {'required': True},
             'name': {'required': True},
             'text': {'required': True},
@@ -110,28 +107,39 @@ class RecipeSerializer(GetRecipeSerializer):
 
     def validate(self, data):
         for field in EXPECTED_RECIPE_FIELDS:
-            if (
-                not self.initial_data.get('ingredients')
-                or not self.initial_data.get('tags')
-            ):
-                raise ValidationError('Ингредиенты не были указаны.')
-            ingredients = self.initial_data['ingredients']
-            ingredients_id = [
-                ingredient['id'] for ingredient in ingredients
-            ]
-            if len(ingredients_id) != len(set(ingredients_id)):
+            if not self.initial_data.get(field):
+                raise ValidationError(f'{field} не был указан.')
+            values_id = self.initial_data.get(field)
+            if field == 'ingredients':
+                values_id = [
+                    ingredient['id'] for ingredient in values_id
+                ]
+            if len(values_id) != len(set(values_id)):
                 raise ValidationError(
-                    'Не должно быть одинаковых ингредиентов.'
+                    f'Не должно быть одинаковых {field}.'
                 )
-            for ingredient in ingredients:
-                if not Ingredient.objects.filter(id=ingredient['id']):
-                    raise ValidationError(
-                        'Ингредиента с таким id не существует.'
-                    )
-                if ingredient['amount'] < 1:
-                    raise ValidationError(
-                        'Поле amount не должно быть меньше 1.'
-                    )
+            if field == 'ingredients':
+                values_id = self.initial_data.get(field)
+
+            for value in values_id:
+                if field == 'ingredients':
+                    if value['amount'] < MINIMUM_AMOUNT_COUNT:
+                        raise ValidationError(
+                            'Поле amount не должно быть меньше 1.'
+                        )
+                    if not Ingredient.objects.filter(
+                        id=value['id']
+                    ).exists():
+                        raise ValidationError(
+                            'Ингредиента с таким id не существует'
+                        )
+                if field == 'tags':
+                    if not Tag.objects.filter(
+                            id=value
+                    ).exists():
+                        raise ValidationError(
+                            'Тэга с таким id не существует'
+                        )
         return data
 
     def create(self, validated_data):

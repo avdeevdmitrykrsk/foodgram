@@ -4,17 +4,6 @@ from rest_framework.filters import BaseFilterBackend
 from content.models import Ingredient
 
 
-# class NameFilterBackend(BaseFilterBackend):
-#     def filter_queryset(self, request, queryset, view):
-#         filter_params = request.query_params
-#         print(filter_params)
-#         if 'name' in filter_params:
-#             name = filter_params.get('name')
-#             print(name)
-#             return queryset.filter(name=f'^{name}')
-#         return queryset
-
-
 class IngredientNameFilterBackend(filter.FilterSet):
     name = filter.CharFilter(lookup_expr='icontains')
 
@@ -34,17 +23,23 @@ class AuthorFilterBackend(BaseFilterBackend):
 
 class IsFavoritedFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        filter_params = request.query_params
-        if 'is_favorited' in filter_params:
-            return queryset.filter(favorite__user=request.user)
+        if request.user.is_authenticated:
+            filter_params = request.query_params
+            if 'is_favorited' in filter_params:
+                return queryset.filter(
+                    favorite_list_by_recipe__user=request.user
+                )
         return queryset
 
 
 class ShoppingCartFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        filter_params = request.query_params
-        if 'is_in_shopping_cart' in filter_params:
-            return queryset.filter(shoppingcart__user=request.user)
+        if request.user.is_authenticated:
+            filter_params = request.query_params
+            if 'is_in_shopping_cart' in filter_params:
+                return queryset.filter(
+                    cart_list_by_recipe__user=request.user
+                )
         return queryset
 
 

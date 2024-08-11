@@ -1,8 +1,16 @@
+# Thirdparty imports
 from django.urls import include, path
 
-from users.views import AvatarViewSet
+# Projects imports
+from users.views import AvatarViewSet, MeViewSet
 
 urlpatterns = [
+    path('users/me/', MeViewSet.as_view(
+            {
+                'get': 'retrieve'
+            }
+        )
+    ),
     path(
         'users/me/avatar/', AvatarViewSet.as_view(
             {

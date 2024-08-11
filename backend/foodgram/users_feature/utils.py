@@ -1,7 +1,10 @@
-def add_recipe_to_list(self, obj):
-    return self.Meta.model.objects.create(
-        user=self.context.get('request').user,
-        recipe=obj.objects.get(
-            id=self.context.get('request').parser_context['kwargs']['pk']
-        )
+# Projects imports
+from users.utils import check_list
+from users_feature.models import Subscribe
+
+
+def check_subscribe(request, obj):
+    subscribe_list = Subscribe.objects.filter(
+        user=request.user
     )
+    return check_list(obj, subscribe_list, 'subscribe_to')

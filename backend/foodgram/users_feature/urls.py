@@ -1,10 +1,10 @@
+# Thirdparty imports
 from django.urls import path
 
-from users_feature.views import (
-    DownloadShoppingCartView, FavoriteViewSet,
-    SubscribeToUser, SubscriptionsViewSet,
-    ShoppingCartViewSet
-)
+# Projects imports
+from users_feature.views import (DownloadShoppingCartView, FavoriteViewSet,
+                                 ShoppingCartViewSet, SubscribeToUser,
+                                 SubscriptionsViewSet)
 
 urlpatterns = [
     path(
@@ -17,7 +17,8 @@ urlpatterns = [
     path(
         'users/<int:pk>/subscribe/', SubscribeToUser.as_view(
             {
-                'post': 'create'
+                'post': 'create',
+                'delete': 'destroy'
             }
         )
     ),

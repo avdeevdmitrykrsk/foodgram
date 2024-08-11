@@ -1,13 +1,10 @@
-import re
-
+# Thirdparty imports
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
-from django.core.exceptions import ValidationError
-from django.db.models import F
 from rest_framework import serializers
 
-from users_feature.models import Subscribe
+# Projects imports
 from users.utils import Base64ToAvatar, check_list
+from users_feature.models import Subscribe
 
 User = get_user_model()
 
@@ -47,7 +44,7 @@ class UserSerializer(serializers.ModelSerializer):
             subscribe_list = Subscribe.objects.filter(
                 user=user
             )
-            return check_list(obj, subscribe_list, Subscribe)
+            return check_list(obj, subscribe_list, 'subscribe')
         return False
 
 

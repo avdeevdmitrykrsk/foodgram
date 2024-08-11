@@ -1,3 +1,4 @@
+# Thirdparty imports
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
@@ -31,6 +32,7 @@ class Ingredient(models.Model):
     name = models.CharField(
         max_length=256,
         verbose_name='Название',
+        help_text='Название',
         unique=True
     )
     measurement_unit = models.CharField(
@@ -39,18 +41,19 @@ class Ingredient(models.Model):
         help_text='Единица измерения'
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         ordering = ('name',)
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
+    def __str__(self):
+        return self.name
+
 
 class Recipe(models.Model):
     name = models.CharField(
         max_length=256,
+        db_index=True,
         verbose_name='Название',
         help_text='Максимально допустимое число знаков - 256.'
     )
@@ -112,7 +115,6 @@ class IngredientRecipe(models.Model):
     amount = models.SmallIntegerField(
         verbose_name='Колличество',
         help_text='Колличество ингредиентов',
-        default=0,
         validators=[
             MinValueValidator(settings.MIN_INGREDIENTS_AMOUNT)
         ]
