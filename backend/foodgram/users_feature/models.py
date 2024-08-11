@@ -19,6 +19,11 @@ class Subscribe(models.Model):
         on_delete=models.CASCADE,
     )
 
+    class Meta:
+        ordering = ('user',)
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(
@@ -32,6 +37,11 @@ class Favorite(models.Model):
         related_name='favorite_list_by_recipe'
     )
 
+    class Meta:
+        ordering = ('user',)
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранные'
+
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
@@ -44,3 +54,8 @@ class ShoppingCart(models.Model):
         on_delete=models.CASCADE,
         related_name='cart_list_by_recipe'
     )
+
+    class Meta:
+        ordering = ('user',)
+        verbose_name = 'Добавлен в корзину'
+        verbose_name_plural = 'Добавлены в корзину'

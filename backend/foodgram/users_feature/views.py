@@ -16,7 +16,7 @@ from users_feature.paginations import PaginateByPageLimit
 from users_feature.serializers import (FavoriteSerializer,
                                        ShoppingCartSerializer,
                                        SubscribeSerializer, Subscriptions)
-from users_feature.utils import check_subscribe
+from users_feature.utils import check_subscribe, make_recipe_data
 
 User = get_user_model()
 
@@ -51,12 +51,7 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
                 id=recipe_id
             )
         )
-        cart_data = {
-            'id': cart.recipe.id,
-            'name': cart.recipe.name,
-            'image': cart.recipe.image.url,
-            'cooking_time': cart.recipe.cooking_time
-        }
+        cart_data = make_recipe_data(cart)
         return Response(data=cart_data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
@@ -76,45 +71,6 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
                 'Данного рецепта не существует в корзине.'
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class DownloadShoppingCartView(APIView):
-
-    def get(self, request, *args, **kwargs):
-        my_recipes = ShoppingCart.objects.filter(
-            user=request.user
-        )
-        ingredients_count = []
-        ingredients_list = []
-        for rec in my_recipes:
-            for ingredients in rec.recipe.ingredientrecipe_set.all():
-                ingredients_list.append(
-                    (
-                        getattr(
-                            ingredients, 'ingredient'
-                        ).name,
-                        getattr(
-                            ingredients, 'ingredient'
-                        ).measurement_unit.strip()
-                    )
-                )
-        for ingredient in ingredients_list:
-            ingredient_count = my_recipes.filter(
-                recipe__ingredientrecipe__ingredient__name=ingredient[0]
-            ).aggregate(count=Sum('recipe__ingredientrecipe__amount'))
-            ingredients_count.append(
-                (
-                    ingredient[INGREDIENT_POS],
-                    ingredient_count['count'],
-                    ingredient[MEASUREMENT_UNIT_POS]
-                )
-            )
-        ingredients_count = list(set(ingredients_count))
-        with open('shopping_cart.txt', 'w', encoding='utf-8') as f:
-            for values in ingredients_count:
-                ingredient, value, mes_unit = values
-                f.write(f'{ingredient} = {value}{mes_unit}\n')
-        return FileResponse(open('shopping_cart.txt', 'rb'))
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
@@ -142,12 +98,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
                 id=recipe_id
             )
         )
-        favorite_data = {
-            'id': favorite.recipe.id,
-            'name': favorite.recipe.name,
-            'image': favorite.recipe.image.url,
-            'cooking_time': favorite.recipe.cooking_time
-        }
+        favorite_data = make_recipe_data(favorite)
         return Response(data=favorite_data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
@@ -257,3 +208,44 @@ class SubscribeToUser(viewsets.ModelViewSet):
                 'Данного пользователя не существует в ваших подписках.'
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DownloadShoppingCartView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        my_recipes = ShoppingCart.objects.filter(
+            user=request.user
+        )
+        ingredients_count = []
+        ingredients_list = []
+        for rec in my_recipes:
+            for ingredients in rec.recipe.ingredientrecipe_set.all():
+                ingredients_list.append(
+                    (
+                        getattr(
+                            ingredients, 'ingredient'
+                        ).name,
+                        getattr(
+                            ingredients, 'ingredient'
+                        ).measurement_unit.strip()
+                    )
+                )
+        for ingredient in ingredients_list:
+            ingredient_count = my_recipes.filter(
+                recipe__ingredientrecipe__ingredient__name=ingredient[
+                    INGREDIENT_POS
+                ]
+            ).aggregate(count=Sum('recipe__ingredientrecipe__amount'))
+            ingredients_count.append(
+                (
+                    ingredient[INGREDIENT_POS],
+                    ingredient_count['count'],
+                    ingredient[MEASUREMENT_UNIT_POS]
+                )
+            )
+        ingredients_count = list(set(ingredients_count))
+        with open('shopping_cart.txt', 'w', encoding='utf-8') as f:
+            for values in ingredients_count:
+                ingredient, value, mes_unit = values
+                f.write(f'{ingredient} = {value}{mes_unit}\n')
+        return FileResponse(open('shopping_cart.txt', 'rb'))
