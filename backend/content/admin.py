@@ -1,8 +1,6 @@
 # Thirdparty imports
-from typing import Any
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from django.db.models import Count
 
 # Projects imports
 from .models import Ingredient, Recipe, Tag
@@ -26,6 +24,7 @@ class IngredientInline(admin.StackedInline):
     model = Recipe.ingredients.through
     extra = 1
 
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author')
@@ -36,7 +35,6 @@ class RecipeAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('get_favorite_count', 'author')
     inlines = [IngredientInline]
-
 
     @admin.display(description='В избранном у')
     def get_favorite_count(self, obj):

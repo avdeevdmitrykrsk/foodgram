@@ -1,22 +1,16 @@
 # Thirdparty imports
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Sum
-from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
-from rest_framework.views import APIView
 
 # Projects imports
-from content.models import Recipe
 from content.paginations import PaginateByPageLimit
 from users.models import Subscribe
 from users.serializers import (AvatarSerializer, SubscribeSerializer,
                                Subscriptions, UserSerializer)
-# from users.utils import make_recipe_data
 
 User = get_user_model()
 

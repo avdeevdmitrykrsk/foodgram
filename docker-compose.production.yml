@@ -34,4 +34,4 @@ services:
       - media_foodgram:/app/media
       - static_volume_foodgram:/staticfiles
     ports:
-      - 8080:80
+      - 80:80

@@ -24,5 +24,4 @@ class FavoriteSgoppingCart(models.Model):
         ordering = ('user', 'recipe')
 
     def __str__(self):
-        from content.models import Recipe
         return f'{self.user} has a {self.recipe[:LONG_STR_CUT_VALUE]}.'
