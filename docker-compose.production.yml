@@ -19,6 +19,7 @@ services:
     volumes:
       - media_foodgram:/app/media
       - static_volume_foodgram:/backend_static
+      - ../docs/:/usr/share/nginx/html/api/docs/
   frontend:
     env_file: .env
     image: dockerbyhomie/foodgram_frontend
@@ -34,4 +35,4 @@ services:
       - media_foodgram:/app/media
       - static_volume_foodgram:/staticfiles
     ports:
-      - 8080:80
+      - 8000:80
