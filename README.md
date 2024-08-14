@@ -1,5 +1,5 @@
 # О проекте:
-## У вас есть любимое блюдо? Блюдо, которое вы готовы вкушать всю жизнь...Блюдо, поедая которое вы хотите завопить -"Это лучшая еда во всем мире!". Есть? Тогда поделитесь рецептом с нами на [Фудграме](foodgram.myftp.org)!
+## У вас есть любимое блюдо? Блюдо, которое вы готовы вкушать всю жизнь...Блюдо, поедая которое вы хотите завопить -"Это лучшая еда во всем мире!". Есть? Тогда поделитесь рецептом с нами на [Фудграме](http://foodgram.myftp.org)!
 ## [Фудграм](http://foodgram.myftp.org) это сайт, на котором вы можете поделиться с нами рецептами самых изысканных блюд, которые кочевали из поколения в поколение и вот, настал момент, когда о нем должны узнать все! 
 ## Как же это сделать? Сейчас объясню на пальцах:
 ### Палец номер 1:
@@ -34,42 +34,90 @@ docker compose up
   Pillow==9.0.0
 ```
 ## Порядок действий при регистрации:
-### Для регистрации необходимо отправить POST запрос на эндпоинт ```/api/users/```, все поля обязательны к заполнению:
+### Для регистрации необходимо отправить POST, все поля обязательны к заполнению:
+```python
+https://foodgram.myftp.org/api/users/
+```
+```python
+{
+    "email": "example@yandex.ru",
+    "username": "example.example",
+    "first_name": "example",
+    "last_name": "example",
+    "password": "Qwerty123"
+}
+```
 
-<сюда ссыль на картинку с запросом>
+### Далее, необходимо отправить POST запрос для получения токена, все поля обязательны к заполнению:
+```python
+https://foodgram.myftp.org/api/auth/token/login/
+```
+```python
+{
+    "email": "example@yandex.ru",
+    "password": "Qwerty123"
+}
+```
 
-### Далее, необходимо отправить POST запрос на эндпоинт ```/api/auth/token/```, включающий поля email и password, в ответе получите токен.
+### Пользователи имеют возможность редактировать свой профиль, отправив PATCH, все поля обязательны к заполнению:
+```python
+https://foodgram.myftp.org/api/users/me/
+```
+```python
+{
+    "email": "new@yandex.ru",
+    "username": "new.example",
+    "first_name": "new",
+    "last_name": "new",
+    "password": "Qwerty123"
+}
+```
 
-<сюда ссыль на картинку с запросом>
-
-### Пользователи имеют возможность редактировать свой профиль, отправив PATCH запрос на эндпоинт ```/api/users/me/```
-
-<сюда ссыль на картинку с запросом>
+## Добавить аватар к профилю.
+```python
+https://foodgram.myftp.org/api/users/me/avatar/
+```
+```python
+{
+    "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAACAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg=="
+}
+```
 
 ## Подписаться на пользователя.
-
-<сюда ссыль на картинку с запросом>
+```python
+https://foodgram.myftp.org/api/users/<id>/subscribe/
+```
 
 ## Добавление нового Рецепта:
-### Все поля обязательны:
-
-<сюда ссыль на картинку с запросом>
+### Post запрос. Все поля обязательны:
+```python
+https://foodgram.myftp.org/api/recipes/
+```
+```python
+{
+    "ingredients": [{"id": 1, "amount": 10}, {"id": 2, "amount": 20}],
+    "tags": [1, 2],
+    "name": "test_recipes1",
+    "text": "sadfgsdfh",
+    "cooking_time": 1,
+    "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABiX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg=="
+}
+```
 
 ## Добавить рецепт в избранное.
+```python
+https://foodgram.myftp.org/api/recipes/<id>/favorited/
+```
 
-<сюда ссыль на картинку с запросом>
 
 ## Добавить рецепт в корзину для покупок.
-
-<сюда ссыль на картинку с запросом>
+```python
+https://foodgram.myftp.org/api/recipes/<id>/shopping_cart/
+```
 
 ## Скачать список покупок.
+```python
+https://foodgram.myftp.org/api/recipes/download_shopping_cart/
+```
 
-<сюда ссыль на картинку с запросом>
-
-
-Находясь в папке infra, выполните команду docker-compose up. При выполнении этой команды контейнер frontend, описанный в docker-compose.yml, подготовит файлы, необходимые для работы фронтенд-приложения, а затем прекратит свою работу.
-
-По адресу http://localhost изучите фронтенд веб-приложения, а по адресу http://localhost/api/docs/ — спецификацию API.
-## Авторы проекта:
 ### GitHub [avdeevdmitrykrsk](https://github.com/avdeevdmitrykrsk)
