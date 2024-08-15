@@ -19,19 +19,22 @@ docker compose up
 
 ## Стек:
 ```python
-  Django==3.2.16
+  Python 3.9
 ```
 ```python
-  djangorestframework==3.12.4
+  Django
 ```
 ```python
-  djoser==2.1.0
+  djangorestframework
 ```
 ```python
-  gunicorn==20.1.0
+  djoser
 ```
 ```python
-  Pillow==9.0.0
+  gunicorn
+```
+```python
+  Pillow
 ```
 
 ## Перед началом, загрузите тестовые ингредиенты и тэги из CSV в БД.
