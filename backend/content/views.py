@@ -1,5 +1,7 @@
-# Thirdparty imports
+# Standart lib imports
 import re
+
+# Thirdparty imports
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Sum
 from django.shortcuts import redirect
@@ -69,10 +71,12 @@ class ShortLinkView(views.APIView):
         if re.match(r'^\/s\/[\w]{3}\/', request.path):
             surl = request.path.split('/')
             lurl = ShortURL.objects.get(surl=surl[SURL_URL_POS]).lurl
-            return redirect(lurl)
+            return redirect(f'/{lurl}')
 
         lurl = request.path.split('get-link/')[LURL_URL_POS].split('/api/')[1]
+        print(lurl)
         surl = get_surl(lurl)
+        print(surl)
         path = f'{request.get_host()}{surl}'
         data = {
             'short-link': path
