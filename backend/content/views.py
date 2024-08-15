@@ -71,7 +71,7 @@ class ShortLinkView(views.APIView):
             lurl = ShortURL.objects.get(surl=surl[SURL_URL_POS]).lurl
             return redirect(lurl)
 
-        lurl = request.path.split('get-link/')[LURL_URL_POS]
+        lurl = request.path.split('get-link/')[LURL_URL_POS].split('/api/')[1]
         surl = get_surl(lurl)
         path = f'{request.get_host()}{surl}'
         data = {
