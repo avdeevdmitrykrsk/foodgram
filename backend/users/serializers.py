@@ -1,12 +1,14 @@
 # Thirdparty imports
 from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 # Projects imports
-from django.db import transaction
 from content.models import Recipe
+from users.fields import Base64ToImage
 from users.models import Subscribe
-from users.utils import Base64ToImage
 
 User = get_user_model()
 
@@ -86,7 +88,7 @@ class Subscriptions(UserSerializer):
         recipes = obj.recipes_by_author.all()
         recipes_limit = query_params.get('recipes_limit')
         if recipes_limit:
-            recipes = obj.recipes_by_author.all()[:int(recipes_limit)]
+            recipes = recipes[:int(recipes_limit)]
         serializer = GetUserRecipes(recipes, many=True)
         return serializer.data
 
@@ -96,3 +98,17 @@ class SubscribeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscribe
         fields = ('user', 'subscribe_to')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscribe.objects.all(),
+                fields=('user', 'subscribe_to')
+            )
+        ]
+
+    def validate_subscribe_to(self, value):
+        request = self.context.get('request')
+        if request.user == value:
+            raise serializers.ValidationError(
+                'Нельзя подписывать на себя.'
+            )
+        return value

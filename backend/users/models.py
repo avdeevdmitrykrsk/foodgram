@@ -60,7 +60,12 @@ class Subscribe(models.Model):
     )
 
     class Meta:
-        unique_together = ('user', 'subscribe_to')
-        ordering = ('user',)
+        ordering = ('user', 'subscribe_to')
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'subscribe_to'),
+                name='unique_user_subscribe_to'
+            )
+        ]

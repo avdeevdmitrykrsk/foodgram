@@ -57,20 +57,12 @@ class SubscribeToUser(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         sub_user_id = kwargs.get('pk')
         sub_user = get_object_or_404(User, id=sub_user_id)
-        if request.user.subscribe_list_by_user.filter(
-            subscribe_to__id=sub_user_id
-        ).exists():
-            raise ValidationError(
-                'Данный пользователь уже в списке ваших подписок.'
-            )
-        if request.user == sub_user:
-            raise ValidationError('Нельзя подписываться на себя.')
         data = {
             'user': request.user.id,
             'subscribe_to': sub_user_id
         }
         context = self.get_serializer_context()
-        serializer = SubscribeSerializer(data=data)
+        serializer = SubscribeSerializer(data=data, context=context)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         serializer = Subscriptions(sub_user, context=context)

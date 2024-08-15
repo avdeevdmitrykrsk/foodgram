@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.conf.urls.static import static
 from django.urls import include, path
 
+from content.views import ShortLinkView
+
 api_urlpatterns = [
     path('', include('users.urls')),
     path('', include('content.urls'))
@@ -12,7 +14,7 @@ api_urlpatterns = [
 urlpatterns = [
     path('api/', include(api_urlpatterns)),
     path('admin/', admin.site.urls),
-    url(r'^s/', include('django_short_url.urls')),
+    path('s/<slug:short>/', ShortLinkView.as_view(), name='short-link'),
 ]
 
 if settings.DEBUG:

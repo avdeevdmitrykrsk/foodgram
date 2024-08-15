@@ -3,13 +3,13 @@ from django.db import transaction
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.validators import ValidationError
+from rest_framework.validators import UniqueTogetherValidator, ValidationError
 
 # Projects imports
 from content.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag)
+from users.fields import Base64ToImage
 from users.serializers import UserSerializer
-from users.utils import Base64ToImage
 
 EXPECTED_RECIPE_FIELDS = (
     'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
@@ -47,12 +47,8 @@ class GetRecipeSerializer(serializers.ModelSerializer):
     )
     author = UserSerializer(read_only=True)
     image = Base64ToImage()
-    is_favorited = serializers.SerializerMethodField(
-        method_name='check_favorite'
-    )
-    is_in_shopping_cart = serializers.SerializerMethodField(
-        method_name='check_is_in_shopping_cart'
-    )
+    is_favorited = serializers.BooleanField(default=False)
+    is_in_shopping_cart = serializers.BooleanField(default=False)
 
     class Meta:
         model = Recipe
@@ -60,26 +56,6 @@ class GetRecipeSerializer(serializers.ModelSerializer):
             'id', 'tags', 'author', 'ingredients',
             'is_favorited', 'is_in_shopping_cart',
             'name', 'image', 'text', 'cooking_time'
-        )
-
-    def check_is_in_shopping_cart(self, obj):
-        request = self.context.get('request')
-        return bool(
-            request
-            and request.user.is_authenticated
-            and ShoppingCart.objects.filter(
-                user=request.user, recipe=obj
-            ).exists()
-        )
-
-    def check_favorite(self, obj):
-        request = self.context.get('request')
-        return bool(
-            request
-            and request.user.is_authenticated
-            and Favorite.objects.filter(
-                user=request.user, recipe=obj
-            ).exists()
         )
 
     def get_ingredients(self, obj):
@@ -168,11 +144,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        instance.name = validated_data['name']
-        instance.image = validated_data['image']
-        instance.text = validated_data['text']
-        instance.cooking_time = validated_data['cooking_time']
-
         tags_values = validated_data.pop('tags')
         instance.tags.set(tags_values)
 
@@ -182,39 +153,35 @@ class RecipeSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class FavoriteSerializer(serializers.ModelSerializer):
+class FavoriteShoppingCartSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Favorite
         fields = ('user', 'recipe',)
 
     def validate_recipe(self, value):
-        request = self.context.get('request')
-        instance = get_object_or_404(Recipe, id=value.id)
-        if Recipe.objects.filter(
-            favorite_list__user=request.user,
-            favorite_list__recipe=instance
-        ).exists():
-            raise ValidationError(
-                'Данный рецепт уже есть в вашем списке.'
-            )
+        get_object_or_404(Recipe, id=value.id)
         return value
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+
+    class Meta(FavoriteShoppingCartSerializer.Meta):
+        model = Favorite
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=('user', 'recipe')
+            )
+        ]
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
 
-    class Meta:
+    class Meta(FavoriteShoppingCartSerializer.Meta):
         model = ShoppingCart
-        fields = ('user', 'recipe',)
-
-    def validate_recipe(self, value):
-        request = self.context.get('request')
-        instance = get_object_or_404(Recipe, id=value.id)
-        if Recipe.objects.filter(
-            shopping_cart_list__user=request.user,
-            shopping_cart_list__recipe=instance
-        ).exists():
-            raise ValidationError(
-                'Данный рецепт уже есть в вашем списке.'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingCart.objects.all(),
+                fields=('user', 'recipe')
             )
-        return value
+        ]

@@ -4,7 +4,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 # Projects imports
-from content.abstract_models import FavoriteSgoppingCart
 from content.constants import (INGREDIENT_MEASUREMENT_UNIT_MAX_LENGTH,
                                INGREDIENT_NAME_MAX_LENGTH, LONG_STR_CUT_VALUE,
                                MAX_COOKING_TIME_VALUE, MAX_INGREDIENTS_AMOUNT,
@@ -62,10 +61,15 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        unique_together = ('name', 'measurement_unit')
         ordering = ('name',)
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('name', 'measurement_unit'),
+                name='unique_name_measurement_unit'
+            )
+        ]
 
     def __str__(self):
         return self.name[:LONG_STR_CUT_VALUE]
@@ -115,7 +119,7 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        ordering = ('name',)
+        ordering = ('name', 'author')
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -151,12 +155,36 @@ class IngredientRecipe(models.Model):
         return f'{self.recipe} include {self.ingredient} with {self.amount}'
 
 
+class FavoriteSgoppingCart(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        'content.Recipe',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ('user', 'recipe')
+
+    def __str__(self):
+        return f'{self.user} has a {self.recipe[:LONG_STR_CUT_VALUE]}.'
+
+
 class Favorite(FavoriteSgoppingCart):
 
     class Meta(FavoriteSgoppingCart.Meta):
         default_related_name = 'favorite_list'
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_favorite_user_recipe'
+            )
+        ]
 
 
 class ShoppingCart(FavoriteSgoppingCart):
@@ -165,3 +193,9 @@ class ShoppingCart(FavoriteSgoppingCart):
         default_related_name = 'shopping_cart_list'
         verbose_name = 'Добавлен в корзину'
         verbose_name_plural = 'Добавлены в корзину'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_shopping_cart_user_recipe'
+            )
+        ]

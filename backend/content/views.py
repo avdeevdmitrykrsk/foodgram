@@ -1,7 +1,10 @@
 # Thirdparty imports
+import re
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Exists, OuterRef, Sum
+from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend
+from django_short_url.models import ShortURL
 from django_short_url.views import get_surl
 from rest_framework import status, views, viewsets
 from rest_framework.permissions import (IsAuthenticated,
@@ -10,6 +13,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # Projects imports
+from content.crud_for_favorite_shopping_cart import (
+    create_favorite_shopping_cart, delete_favorite_shopping_cart)
 from content.filters import IngredientNameFilterBackend, RecipeFilter
 from content.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag)
@@ -18,9 +23,8 @@ from content.permissions import IsAuthorOrReadOnly
 from content.serializers import (FavoriteSerializer, GetRecipeSerializer,
                                  IngredientSerializer, RecipeSerializer,
                                  ShoppingCartSerializer, TagSerializer)
-from content.utils import (create_favorite_shopping_cart,
-                           delete_favorite_shopping_cart)
 
+SURL_URL_POS = 2
 LURL_URL_POS = 0
 SAFE_ACTIONS = ('list', 'retrieve')
 
@@ -62,6 +66,11 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 class ShortLinkView(views.APIView):
 
     def get(self, request, *args, **kwargs):
+        if re.match(r'^\/s\/[\w]{3}\/', request.path):
+            surl = request.path.split('/')
+            lurl = ShortURL.objects.get(surl=surl[SURL_URL_POS]).lurl
+            return redirect(lurl)
+
         lurl = request.path.split('get-link/')[LURL_URL_POS]
         surl = get_surl(lurl)
         path = f'{request.get_host()}{surl}'
@@ -79,13 +88,28 @@ class TagViewSet(viewsets.ModelViewSet):
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
     pagination_class = PaginateByPageLimit
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     http_method_names = ('get', 'post', 'patch', 'delete')
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Recipe.objects.annotate(
+                is_favorited=Exists(
+                    Favorite.objects.filter(
+                        user=self.request.user, recipe=OuterRef('pk')
+                    )
+                ),
+                is_in_shopping_cart=Exists(
+                    ShoppingCart.objects.filter(
+                        user=self.request.user, recipe=OuterRef('pk')
+                    )
+                ),
+            ).order_by('name', 'author')
+        return Recipe.objects.all()
 
     def get_serializer_class(self):
         if self.action in SAFE_ACTIONS:
