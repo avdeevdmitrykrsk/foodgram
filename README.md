@@ -33,6 +33,15 @@ docker compose up
 ```python
   Pillow==9.0.0
 ```
+
+## Перед началом, загрузите тестовые ингредиенты и тэги из CSV в БД.
+```python
+python manage.py load_ingredients
+```
+```python
+python manage.py load_tags
+```
+
 ## Порядок действий при регистрации:
 ### Для регистрации необходимо отправить POST, все поля обязательны к заполнению:
 ```python
