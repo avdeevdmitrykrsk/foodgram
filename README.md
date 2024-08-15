@@ -10,37 +10,18 @@ git clone git@github.com:avdeevdmitrykrsk/foodgram.git
 ```python
 cd foodgram
 ```
-### Находясь в папке foodgram выполнить команду:
-```python
-docker compose up
-```
-### После этого Docker развернет контейнеры локально.
-
-
-## Стек:
-```python
-  Django==3.2.16
-```
-```python
-  djangorestframework==3.12.4
-```
-```python
-  djoser==2.1.0
-```
-```python
-  gunicorn==20.1.0
-```
-```python
-  Pillow==9.0.0
-```
-
-## Перед началом, загрузите тестовые ингредиенты и тэги из CSV в БД.
+## Загрузите ингредиенты и тэги из CSV в БД.
 ```python
 python manage.py load_ingredients
 ```
 ```python
 python manage.py load_tags
 ```
+### Находясь в папке foodgram выполнить команду:
+```python
+docker compose up
+```
+### После этого Docker развернет контейнеры локально.
 
 ## Порядок действий при регистрации:
 ### Для регистрации необходимо отправить POST, все поля обязательны к заполнению:
@@ -127,6 +108,22 @@ https://foodgram.myftp.org/api/recipes/<id>/shopping_cart/
 ## Скачать список покупок.
 ```python
 https://foodgram.myftp.org/api/recipes/download_shopping_cart/
+```
+## Стек:
+```python
+  Django==3.2.16
+```
+```python
+  djangorestframework==3.12.4
+```
+```python
+  djoser==2.1.0
+```
+```python
+  gunicorn==20.1.0
+```
+```python
+  Pillow==9.0.0
 ```
 
 ### GitHub [avdeevdmitrykrsk](https://github.com/avdeevdmitrykrsk)
