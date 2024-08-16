@@ -63,8 +63,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'content.paginations.PaginateByPageLimit',
-    'PAGE_SIZE': 5,
 }
 
 ROOT_URLCONF = 'backend.urls'

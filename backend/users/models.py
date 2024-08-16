@@ -2,11 +2,28 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
+from django.db.models import Exists, OuterRef
+from django.contrib.auth.models import UserManager
 
 # Projects imports
 from content.constants import LONG_STR_CUT_VALUE
 from users.constants import (USER_EMAIL_LENGTH, USER_FIRSTNAME_LENGTH,
                              USER_LASTNAME_LENGTH, USER_USERNAME_LENGTH)
+
+
+class FoodgramuserManager(UserManager):
+
+    def get_annotated_queryset(self, user):
+        queryset = super().get_queryset()
+        if user.is_authenticated:
+            return queryset.annotate(
+                is_subscribed=Exists(
+                    Subscribe.objects.filter(
+                        user=user, subscribe_to=OuterRef('pk')
+                    )
+                ),
+            ).order_by('username',)
+        return queryset
 
 
 class FoodgramUser(AbstractUser):
@@ -37,6 +54,8 @@ class FoodgramUser(AbstractUser):
         null=True,
         default=None
     )
+
+    objects = FoodgramuserManager()
 
     class Meta:
         ordering = ('username',)

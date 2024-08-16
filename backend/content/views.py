@@ -3,7 +3,7 @@ import re
 
 # Thirdparty imports
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Sum
+from django.db.models import Sum
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from django_short_url.models import ShortURL
@@ -88,7 +88,6 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     http_method_names = ('get',)
-    pagination_class = None
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -100,20 +99,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return Recipe.objects.annotate(
-                is_favorited=Exists(
-                    Favorite.objects.filter(
-                        user=self.request.user, recipe=OuterRef('pk')
-                    )
-                ),
-                is_in_shopping_cart=Exists(
-                    ShoppingCart.objects.filter(
-                        user=self.request.user, recipe=OuterRef('pk')
-                    )
-                ),
-            ).order_by('name', 'author')
-        return Recipe.objects.all()
+        return Recipe.objects.get_annotated_queryset(self.request.user)
 
     def get_serializer_class(self):
         if self.action in SAFE_ACTIONS:
@@ -127,7 +113,6 @@ class IngredientsViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientNameFilterBackend
     http_method_names = ('get',)
-    pagination_class = None
 
 
 class DownloadShoppingCartView(APIView):

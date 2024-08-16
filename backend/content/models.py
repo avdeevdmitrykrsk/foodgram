@@ -2,6 +2,7 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Exists, OuterRef
 
 # Projects imports
 from content.constants import (INGREDIENT_MEASUREMENT_UNIT_MAX_LENGTH,
@@ -75,6 +76,26 @@ class Ingredient(models.Model):
         return self.name[:LONG_STR_CUT_VALUE]
 
 
+class RecipeManager(models.Manager):
+
+    def get_annotated_queryset(self, user):
+        queryset = super().get_queryset()
+        if user.is_authenticated:
+            return queryset.annotate(
+                is_favorited=Exists(
+                    Favorite.objects.filter(
+                        user=user, recipe=OuterRef('pk')
+                    )
+                ),
+                is_in_shopping_cart=Exists(
+                    ShoppingCart.objects.filter(
+                        user=user, recipe=OuterRef('pk')
+                    )
+                ),
+            ).order_by('name', 'author')
+        return queryset
+
+
 class Recipe(models.Model):
     name = models.CharField(
         max_length=RECIPE_NAME_MAX_LENGTH,
@@ -117,6 +138,8 @@ class Recipe(models.Model):
         null=True,
         default=None
     )
+
+    objects = RecipeManager()
 
     class Meta:
         ordering = ('name', 'author')

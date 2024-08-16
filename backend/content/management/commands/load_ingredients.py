@@ -23,9 +23,11 @@ class Command(BaseCommand):
             'r', encoding='utf-8'
         ) as f:
             ingredients = csv.reader(f)
+            objects = []
             for ingredient in ingredients:
                 name, mes = ingredient
-                Ingredient.objects.create(name=name, measurement_unit=mes)
+                objects.append(Ingredient(name=name, measurement_unit=mes))
+            Ingredient.objects.bulk_create(objects)
         self.stdout.write(
             self.style.SUCCESS('Ингредиенты импортированы в БД.')
         )

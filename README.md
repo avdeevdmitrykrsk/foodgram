@@ -4,44 +4,39 @@
 ## Как же это сделать? Сейчас объясню на пальцах:
 ### Палец номер 1:
 ### **Клонировать репозиторий и перейти в него в командной строке:**
-```python
+```sh
 git clone git@github.com:avdeevdmitrykrsk/foodgram.git
 ```
-```python
+```sh
 cd foodgram
 ```
 ### Находясь в папке foodgram выполнить команду:
-```python
+```sh
 docker compose up
 ```
 ### После этого Docker развернет контейнеры локально.
 
 
 ## Стек:
-```python
-  Python 3.9
-```
-```python
-  Django
-```
-```python
-  djangorestframework
-```
-```python
-  djoser
-```
-```python
-  gunicorn
-```
-```python
-  Pillow
-```
+
+  * Python 3.9
+
+  * Django
+
+  * djangorestframework
+
+  * djoser
+
+  * gunicorn
+
+* Pillow
+
 
 ## Перед началом, загрузите тестовые ингредиенты и тэги из CSV в БД.
-```python
+```sh
 python manage.py load_ingredients
 ```
-```python
+```sh
 python manage.py load_tags
 ```
 
@@ -50,7 +45,7 @@ python manage.py load_tags
 ```python
 https://foodgram.myftp.org/api/users/
 ```
-```python
+```json
 {
     "email": "example@yandex.ru",
     "username": "example.example",
@@ -64,7 +59,7 @@ https://foodgram.myftp.org/api/users/
 ```python
 https://foodgram.myftp.org/api/auth/token/login/
 ```
-```python
+```json
 {
     "email": "example@yandex.ru",
     "password": "Qwerty123"
@@ -75,7 +70,7 @@ https://foodgram.myftp.org/api/auth/token/login/
 ```python
 https://foodgram.myftp.org/api/users/me/
 ```
-```python
+```json
 {
     "email": "new@yandex.ru",
     "username": "new.example",
@@ -89,7 +84,7 @@ https://foodgram.myftp.org/api/users/me/
 ```python
 https://foodgram.myftp.org/api/users/me/avatar/
 ```
-```python
+```json
 {
     "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAACAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg=="
 }
@@ -105,7 +100,7 @@ https://foodgram.myftp.org/api/users/<id>/subscribe/
 ```python
 https://foodgram.myftp.org/api/recipes/
 ```
-```python
+```json
 {
     "ingredients": [{"id": 1, "amount": 10}, {"id": 2, "amount": 20}],
     "tags": [1, 2],

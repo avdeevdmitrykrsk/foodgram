@@ -12,7 +12,7 @@ from users.fields import Base64ToImage
 from users.serializers import UserSerializer
 
 EXPECTED_RECIPE_FIELDS = (
-    'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
+    'ingredients', 'tags', 'name', 'text', 'cooking_time'
 )
 
 
@@ -105,6 +105,11 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 'Не должно быть одинаковых Ингредиентов.'
             )
+        return value
+
+    def validate_image(self, value):
+        if not value:
+            raise ValidationError('image не был указан.')
         return value
 
     def validate(self, attrs):

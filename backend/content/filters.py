@@ -4,7 +4,7 @@ from content.models import Ingredient, Recipe, Tag
 
 
 class IngredientNameFilterBackend(filter.FilterSet):
-    name = filter.CharFilter(lookup_expr='icontains')
+    name = filter.CharFilter(lookup_expr='istartswith')
 
     class Meta:
         model = Ingredient

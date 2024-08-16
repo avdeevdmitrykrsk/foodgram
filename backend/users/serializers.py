@@ -27,9 +27,7 @@ class AvatarSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField(
-        method_name='check_subscribe'
-    )
+    is_subscribed = serializers.BooleanField(default=False)
 
     class Meta:
         model = User
@@ -42,16 +40,6 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name', 'is_subscribed', 'avatar',
         )
 
-    def check_subscribe(self, obj):
-        request = self.context.get('request')
-        return bool(
-            request
-            and request.user.is_authenticated
-            and obj in Subscribe.objects.filter(
-                user=request.user, subscribe_to=obj
-            )
-        )
-
 
 class GetUserRecipes(serializers.ModelSerializer):
 
@@ -60,7 +48,8 @@ class GetUserRecipes(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class Subscriptions(UserSerializer):
+class Subscriptions(serializers.ModelSerializer):
+    is_subscribed = serializers.BooleanField(default=False)
     recipes = serializers.SerializerMethodField(
         method_name='get_recipes'
     )

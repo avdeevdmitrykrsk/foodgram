@@ -23,6 +23,8 @@ class Command(BaseCommand):
             'r', encoding='utf-8'
         ) as f:
             tags = csv.reader(f)
+
+            # Not too much tags to use bulk_create here
             for tag in tags:
                 name, slug = tag
                 Tag.objects.create(name=name, slug=slug)
